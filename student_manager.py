@@ -1,49 +1,36 @@
 # -*- coding: utf-8 -*-
 """
-学生信息管理系统 —— 软件测试练手项目
-=====================================
+学生信息管理系统
 
-这是一个为零基础 → 软件测试实习 设计的学习项目。
-
-它同时帮你练习两件事：
-  1. 看懂 Python 基础：函数、SQLite 数据库、增删改查
-  2. 把它当成"被测系统"，在 test_student_manager.py 里为它写测试用例
-
-项目功能：
-  登录校验 / 添加学生 / 查询学生 / 修改学生 / 删除学生 / 查看全部学生
-
-怎么运行（在 VSCode 里打开这个文件，点右上角的 ▶ 运行按钮）：
-  student_manager.py        跑一遍功能演示
-  test_student_manager.py   跑测试用例
+基于 Python + SQLite 实现，提供登录校验与学生信息的增删改查功能。
+配套单元测试见 test_student_manager.py。
 """
 
 import sqlite3
 
-# ================= 一、登录模块 =================
-# 写死一个账号密码，方便练习"登录功能"的经典测试用例
-# （正确密码 / 错误密码 / 空输入 / 大小写 等）
+# ================= 登录模块 =================
 USERNAME = "admin"
 PASSWORD = "123456"
 
 
 def login(username, password):
-    """登录校验：成功返回 True，失败返回 False。"""
+    """登录校验：用户名与密码均匹配时返回 True，否则返回 False。"""
     if not username or not password:
-        return False  # 用户名或密码为空 -> 失败
+        return False
     return username == USERNAME and password == PASSWORD
 
 
-# ================= 二、数据库 =================
+# ================= 数据库 =================
 DB_FILE = "students.db"
 
 
 def _conn():
-    """内部辅助函数：获取一个数据库连接。"""
+    """获取数据库连接。"""
     return sqlite3.connect(DB_FILE)
 
 
 def init_db():
-    """初始化：如果学生表不存在就创建它。"""
+    """初始化数据库：students 表不存在时自动创建。"""
     conn = _conn()
     conn.execute(
         """
@@ -60,14 +47,9 @@ def init_db():
     conn.close()
 
 
-# ================= 三、学生增删改查 =================
+# ================= 学生增删改查 =================
 def add_student(name, age, major, phone):
-    """
-    添加学生。
-    姓名 name 不能为空，否则返回 None（表示失败）；
-    成功则返回新学生的 id（整数）。
-    年龄 age 在0~30之间，否则返回 None（表示失败）
-    """
+    """添加学生：姓名非空、年龄 0-30 合法；成功返回新 id，失败返回 None。"""
     if not name or not name.strip():
         return None
     if not 0 <= age <= 30:
@@ -85,7 +67,7 @@ def add_student(name, age, major, phone):
 
 
 def search_student(name):
-    """按姓名精确查询，返回学生列表（查不到返回空列表 []）。"""
+    """按姓名精确查询，返回学生列表（未找到返回空列表）。"""
     conn = _conn()
     cur = conn.cursor()
     cur.execute("SELECT * FROM students WHERE name = ?", (name,))
@@ -95,7 +77,7 @@ def search_student(name):
 
 
 def list_students():
-    """返回所有学生。"""
+    """返回全部学生。"""
     conn = _conn()
     cur = conn.cursor()
     cur.execute("SELECT * FROM students")
@@ -105,7 +87,7 @@ def list_students():
 
 
 def update_student(student_id, name, age, major, phone):
-    """按 id 修改学生信息（全部字段），返回是否成功（True/False）。"""
+    """按 id 修改学生信息；姓名非空、年龄 0-30 合法，返回是否成功。"""
     if not name or not name.strip():
         return False
     if not 0 <= age <= 30:
@@ -123,7 +105,7 @@ def update_student(student_id, name, age, major, phone):
 
 
 def delete_student(student_id):
-    """按 id 删除学生，返回是否真的删掉了（True/False）。"""
+    """按 id 删除学生，返回是否删除成功。"""
     conn = _conn()
     cur = conn.cursor()
     cur.execute("DELETE FROM students WHERE id = ?", (student_id,))
@@ -133,11 +115,11 @@ def delete_student(student_id):
     return deleted
 
 
-# ================= 四、主程序（演示） =================
+# ================= 主程序 =================
 if __name__ == "__main__":
     init_db()
 
-    print("=== 学生信息管理系统 演示 ===\n")
+    print("=== 学生信息管理系统 ===\n")
 
     print("登录 admin / 123456   ->", login("admin", "123456"))
     print("登录 admin / 错误密码 ->", login("admin", "000000"))

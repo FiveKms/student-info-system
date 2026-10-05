@@ -1,21 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 学生信息管理系统 —— 单元测试
-================================
 
-这个文件是简历上"测试经验"的核心。
-用 Python 自带的 unittest 框架，为 student_manager.py 的每个功能写测试用例，
-覆盖：正常情况、异常情况、边界情况。
-
-怎么运行（在 VSCode 里打开这个文件，点右上角 ▶ 运行按钮）：
-  python test_student_manager.py
-结果：
-  "OK"     = 全部通过
-  "FAILED" = 有失败（说明测出了 bug，这本身也是"测试能力"的体现）
-
-学到的核心概念：
-  测试用例 = 输入 + 预期结果 + 断言(assert)
-  常用设计方法：等价类、边界值、场景法（见下方用例注释）
+基于 unittest 为 student_manager.py 各功能编写测试用例，
+覆盖正常、异常、边界三类情况。
 """
 
 import unittest
@@ -24,7 +12,7 @@ import student_manager as sm
 
 
 def _clear_db():
-    """辅助函数：清空学生表，保证每个用例互不干扰。"""
+    """清空学生表，保证各用例相互独立。"""
     sm.init_db()
     conn = sqlite3.connect(sm.DB_FILE)
     conn.execute("DELETE FROM students")
@@ -32,7 +20,7 @@ def _clear_db():
     conn.close()
 
 
-# ---------- 登录功能测试 ----------
+# ---------- 登录功能 ----------
 class TestLogin(unittest.TestCase):
 
     def test_正确账号密码_登录成功(self):
@@ -52,11 +40,11 @@ class TestLogin(unittest.TestCase):
         self.assertFalse(sm.login("admin", ""))
 
     def test_用户名大小写_登录失败(self):
-        # 边界情况：admin 和 Admin 应区分
+        # 边界情况：大小写应区分
         self.assertFalse(sm.login("Admin", "123456"))
 
 
-# ---------- 添加学生功能测试 ----------
+# ---------- 添加学生 ----------
 class TestAddStudent(unittest.TestCase):
 
     def setUp(self):
@@ -72,13 +60,13 @@ class TestAddStudent(unittest.TestCase):
         self.assertIsNone(sm.add_student("   ", 20, "计算机", "138"))
 
     def test_年龄超范围_添加失败(self):
-        # 边界值：超上限
+        # 边界值：超上限、边界外、负数
         self.assertIsNone(sm.add_student("小二", 40, "计算机", "138"))
-        self.assertIsNone(sm.add_student("小三", 31, "计算机", "138"))   # 边界外一格
-        self.assertIsNone(sm.add_student("小四", -1, "计算机", "138"))   # 负数
+        self.assertIsNone(sm.add_student("小三", 31, "计算机", "138"))
+        self.assertIsNone(sm.add_student("小四", -1, "计算机", "138"))
 
     def test_年龄边界值_添加成功(self):
-        # 边界值：刚好在边界上，应该成功
+        # 边界值：恰好落在边界上，应成功
         self.assertIsInstance(sm.add_student("小五", 0, "计算机", "138"), int)
         self.assertIsInstance(sm.add_student("小六", 30, "计算机", "138"), int)
 
@@ -87,7 +75,7 @@ class TestAddStudent(unittest.TestCase):
         self.assertEqual(len(sm.search_student("李四")), 1)
 
 
-# ---------- 查询学生功能测试 ----------
+# ---------- 查询学生 ----------
 class TestSearchStudent(unittest.TestCase):
 
     def setUp(self):
@@ -101,7 +89,7 @@ class TestSearchStudent(unittest.TestCase):
         self.assertEqual(sm.search_student("不存在"), [])
 
 
-# ---------- 删除学生功能测试 ----------
+# ---------- 删除学生 ----------
 class TestDeleteStudent(unittest.TestCase):
 
     def setUp(self):
@@ -112,7 +100,7 @@ class TestDeleteStudent(unittest.TestCase):
         self.assertTrue(sm.delete_student(sid))
 
     def test_删除不存在的id(self):
-        # 边界：删除一个不存在的 id
+        # 边界：删除不存在的 id
         self.assertFalse(sm.delete_student(9999))
 
     def test_删除后_查询不到(self):
@@ -121,7 +109,7 @@ class TestDeleteStudent(unittest.TestCase):
         self.assertEqual(sm.search_student("钱七"), [])
 
 
-# ---------- 修改学生功能测试 ----------
+# ---------- 修改学生 ----------
 class TestUpdateStudent(unittest.TestCase):
 
     def setUp(self):
